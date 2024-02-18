@@ -2,6 +2,7 @@ import pylogix
 from pylogix.lgx_response import Response
 from struct import pack, unpack_from
 
+
 def get_memory(plc, service, cip_class, instance, attribute, data):
     """
     User configurable CIP command.  It is up to you to understand the
@@ -22,22 +23,22 @@ def get_memory(plc, service, cip_class, instance, attribute, data):
     total_memory_gen = 0
     total_memory = 0
 
-    AttributeService = service
-    AttributeSize = 0x02
-    AttributeClassType = 0x20
-    AttributeClass = cip_class
-    AttributeInstanceType = 0x24
-    AttributeInstance = instance
-    AttributeCount = 0x05
+    cip_service = service
+    cip_service_size = 0x02
+    cip_class_type = 0x20
+    cip_class = cip_class
+    cip_instance_type = 0x24
+    cip_instance = instance
+    cip_attribute_count = 0x05
 
     request = pack('<BBBBBBHHHHHH',
-                    AttributeService,
-                    AttributeSize,
-                    AttributeClassType,
-                    AttributeClass,
-                    AttributeInstanceType,
-                    AttributeInstance,
-                    AttributeCount,
+                    cip_service,
+                    cip_service_size,
+                    cip_class_type,
+                    cip_class,
+                    cip_instance_type,
+                    cip_instance,
+                    cip_attribute_count,
                     1, 2, 5, 6, 7)
 
     status, ret_data = plc.conn.send(request, False)
