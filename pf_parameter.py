@@ -9,7 +9,7 @@ def get_parameter(plc, parameter):
     
     returns Response class (.TagName, .Value, .Status
     """
-    conn = plc.conn.connect(True)
+    conn = plc.conn.connect(False)
     if not conn[0]:
         return Response(None, None, conn[1])
 
