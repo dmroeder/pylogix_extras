@@ -1,19 +1,11 @@
 import pylogix
-from pylogix.lgx_response import Response
-from struct import pack, unpack_from
+import struct
 
 
-def get_memory(plc, service, cip_class, instance, attribute, data):
+def get_memory(plc):
     """
-    User configurable CIP command.  It is up to you to understand the
-    data that will be returned
-    
-    returns Response class (.TagName, .Value, .Status
+    This will apparently not work for 5380/5580 controllers
     """
-    conn = plc.conn.connect(False)
-    if not conn[0]:
-        return Response(None, None, conn[1])
-
     free_memory_io = 0
     free_memory_dt = 0
     free_memory_gen = 0
@@ -23,44 +15,26 @@ def get_memory(plc, service, cip_class, instance, attribute, data):
     total_memory_gen = 0
     total_memory = 0
 
-    cip_service = service
-    cip_service_size = 0x02
-    cip_class_type = 0x20
-    cip_class = cip_class
-    cip_instance_type = 0x24
-    cip_instance = instance
-    cip_attribute_count = 0x05
+    ret = plc.Message(0x03, 0x72, 0x01, [0x01, 0x02, 0x05, 0x06, 0x07])
 
-    request = pack('<BBBBBBHHHHHH',
-                    cip_service,
-                    cip_service_size,
-                    cip_class_type,
-                    cip_class,
-                    cip_instance_type,
-                    cip_instance,
-                    cip_attribute_count,
-                    1, 2, 5, 6, 7)
-
-    status, ret_data = plc.conn.send(request, False)
-
-    if status == 0:
-        data = ret_data[50:]
-        free_memory_io = unpack_from("<I", data, 0)[0] * 4
-        free_memory_dt = unpack_from("<I", data, 4)[0] * 4
-        free_memory_gen = unpack_from("<I", data, 8)[0] * 4
+    if ret.Status == "Success":
+        data = ret.Value[50:]
+        free_memory_io = struct.unpack_from("<I", data, 0)[0] * 4
+        free_memory_dt = struct.unpack_from("<I", data, 4)[0] * 4
+        free_memory_gen = struct.unpack_from("<I", data, 8)[0] * 4
         free_memory = free_memory_io + free_memory_dt + free_memory_gen
-        total_memory_io = unpack_from("<I", data, 16)[0] * 4
-        total_memory_dt = unpack_from("<I", data, 20)[0] * 4
-        total_memory_gen = unpack_from("<I", data, 24)[0] * 4
+        total_memory_io = struct.unpack_from("<I", data, 16)[0] * 4
+        total_memory_dt = struct.unpack_from("<I", data, 20)[0] * 4
+        total_memory_gen = struct.unpack_from("<I", data, 24)[0] * 4
         total_memory = total_memory_io + total_memory_dt + total_memory_gen
 
     value = [free_memory_io, free_memory_dt, free_memory_gen, free_memory,
             total_memory_io, total_memory_dt, total_memory_gen, total_memory]
 
-    return Response(None, value, status)
+    return value
 
 
 with pylogix.PLC("192.168.1.10") as comm:
 
-    response = get_memory(comm, 0x03, 0x72, 0x01, 0x00, None)
+    response = get_memory(comm)
     print(response)
