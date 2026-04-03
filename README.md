@@ -1,0 +1,1 @@
+A collection of random CIP objects I've had to use over the years.
